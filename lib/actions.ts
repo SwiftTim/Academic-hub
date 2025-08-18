@@ -113,3 +113,92 @@ export async function signOut() {
   await supabase.auth.signOut()
   redirect("/auth/login")
 }
+
+// Action to track resource downloads
+export async function trackDownload(resourceId: string) {
+  "use server"
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "You must be logged in to download resources." }
+  }
+
+  try {
+    const { error } = await supabase.from("resource_downloads").insert({
+      resource_id: resourceId,
+      user_id: user.id,
+    })
+
+    if (error) {
+      // This might fail if the user has already downloaded the resource, which is fine.
+      console.warn("Error tracking download:", error.message)
+    }
+  } catch (error) {
+    console.error("Error tracking download:", error)
+  }
+}
+
+// Action to upload a learning resource
+export async function uploadResource(formData: FormData) {
+  "use server"
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "You must be logged in to upload resources." }
+  }
+
+  const unitId = formData.get("unitId") as string
+  const title = formData.get("title") as string
+  const description = formData.get("description") as string
+  const file = formData.get("file") as File
+
+  if (!unitId || !title || !file) {
+    return { error: "Missing required fields." }
+  }
+
+  try {
+    // 1. Upload file to Supabase Storage
+    const filePath = `${unitId}/${Date.now()}-${file.name}`
+    const { error: uploadError } = await supabase.storage.from("learning_resources").upload(filePath, file)
+
+    if (uploadError) {
+      console.error("Error uploading file:", uploadError)
+      return { error: "Failed to upload file." }
+    }
+
+    // 2. Get public URL of the uploaded file
+    const { data: urlData } = supabase.storage.from("learning_resources").getPublicUrl(filePath)
+    const fileUrl = urlData.publicUrl
+
+    // 3. Insert into learning_resources table
+    const { error: insertError } = await supabase.from("learning_resources").insert({
+      unit_id: unitId,
+      title,
+      description,
+      resource_type: file.type.startsWith("video") ? "video" : "document", // Simple type detection
+      file_url: fileUrl,
+      file_size: file.size,
+      uploaded_by: user.id,
+    })
+
+    if (insertError) {
+      console.error("Error inserting resource:", insertError)
+      return { error: "Failed to save resource to database." }
+    }
+
+    // Revalidate the path to show the new resource
+    revalidatePath(`/dashboard/units/${unitId}/resources`)
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error uploading resource:", error)
+    return { error: "An unexpected error occurred." }
+  }
+}

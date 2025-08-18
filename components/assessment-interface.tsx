@@ -34,6 +34,8 @@ export default function AssessmentInterface({ assessment, attempt, questions, us
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [autoSaveStatus, setAutoSaveStatus] = useState<"saved" | "saving" | "error">("saved")
+  const [leaveCount, setLeaveCount] = useState(0)
+  const [copyPasteCount, setCopyPasteCount] = useState(0)
   const router = useRouter()
   const autoSaveRef = useRef<NodeJS.Timeout>()
 
@@ -82,6 +84,34 @@ export default function AssessmentInterface({ assessment, attempt, questions, us
       }
     }
   }, [answers, attempt.id])
+
+  // Anti-cheating measures
+  useEffect(() => {
+    if (!assessment.anti_cheat_enabled) return
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        setLeaveCount((prev) => prev + 1)
+        alert("You have left the assessment tab. This action has been logged.")
+      }
+    }
+
+    const handleCopyPaste = (e: ClipboardEvent) => {
+      e.preventDefault()
+      setCopyPasteCount((prev) => prev + 1)
+      alert("Copying and pasting is disabled during this assessment.")
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    document.addEventListener("copy", handleCopyPaste)
+    document.addEventListener("paste", handleCopyPaste)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      document.removeEventListener("copy", handleCopyPaste)
+      document.removeEventListener("paste", handleCopyPaste)
+    }
+  }, [assessment.anti_cheat_enabled])
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers((prev) => ({
@@ -240,10 +270,24 @@ export default function AssessmentInterface({ assessment, attempt, questions, us
             </div>
             <div className="flex items-center space-x-4">
               {assessment.anti_cheat_enabled && (
-                <Badge variant="outline" className="text-orange-600 border-orange-600">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Monitored
-                </Badge>
+                <>
+                  <Badge variant="outline" className="text-orange-600 border-orange-600">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Monitored
+                  </Badge>
+                  {leaveCount > 0 && (
+                    <Badge variant="destructive">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Left Tab: {leaveCount}
+                    </Badge>
+                  )}
+                  {copyPasteCount > 0 && (
+                    <Badge variant="destructive">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Copy/Paste: {copyPasteCount}
+                    </Badge>
+                  )}
+                </>
               )}
               <div className="flex items-center space-x-2">
                 <Clock className="h-4 w-4 text-red-500" />
