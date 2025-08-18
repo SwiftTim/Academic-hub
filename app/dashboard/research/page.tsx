@@ -5,8 +5,29 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Users, FileText, Calendar, Search } from "lucide-react"
 import Link from "next/link"
+import { isSupabaseConfigured } from "@/lib/supabase/server"
 
 export default async function ResearchPage() {
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl text-center">
+        <Card>
+          <CardHeader>
+            <CardTitle>Supabase Not Configured</CardTitle>
+            <CardDescription>
+              Please configure your Supabase environment variables to use the Research Hub.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Follow the instructions in the `README.md` file to set up your Supabase project and add the required environment variables.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const supabase = createServerComponentClient({ cookies })
 
   const {
