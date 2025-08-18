@@ -1,4 +1,4 @@
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { isAfter, isBefore } from "date-fns"
 import AssessmentInterface from "@/components/assessment-interface"
@@ -10,14 +10,6 @@ interface PageProps {
 }
 
 export default async function TakeAssessmentPage({ params }: PageProps) {
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <h1 className="text-2xl font-bold mb-4 text-gray-900">Connect Supabase to get started</h1>
-      </div>
-    )
-  }
-
   const supabase = createClient()
   const {
     data: { user },

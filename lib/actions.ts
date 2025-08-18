@@ -15,7 +15,7 @@ export async function signIn(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const supabase = await createClient()
+  const supabase = createClient()
 
   try {
     const { error } = await supabase.auth.signInWithPassword({
@@ -54,7 +54,7 @@ export async function signUp(prevState: any, formData: FormData) {
     return { error: "All required fields must be filled" }
   }
 
-  const supabase = await createClient()
+  const supabase = createClient()
 
   try {
     // Create auth user
@@ -109,7 +109,7 @@ export async function signUp(prevState: any, formData: FormData) {
 
 // Sign out action
 export async function signOut() {
-  const supabase = await createClient()
+  const supabase = createClient()
   await supabase.auth.signOut()
   redirect("/auth/login")
 }
@@ -117,7 +117,7 @@ export async function signOut() {
 // Action to track resource downloads
 export async function trackDownload(resourceId: string) {
   "use server"
-  const supabase = await createClient()
+  const supabase = createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -145,7 +145,7 @@ export async function trackDownload(resourceId: string) {
 export async function uploadResource(formData: FormData) {
   "use server"
 
-  const supabase = await createClient()
+  const supabase = createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()

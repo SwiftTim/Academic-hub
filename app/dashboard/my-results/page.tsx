@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { DownloadResultsButton } from "./_components/download-results-button"
 
 export default async function MyResultsPage() {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const {
     data: { user },

@@ -7,7 +7,7 @@ import { LearningResourceCard } from "./_components/learning-resource-card"
 import { UploadResourceDialog } from "./_components/upload-resource-dialog"
 
 export default async function UnitResourcesPage({ params }: { params: { unitId: string } }) {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const {
     data: { user },

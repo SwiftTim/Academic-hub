@@ -1,5 +1,4 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +9,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 export default async function ResearchProjectPage({ params }: { params: { projectId: string } }) {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = createClient()
 
   const {
     data: { user },

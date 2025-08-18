@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Clock, Shield, AlertTriangle, CheckCircle } from "lucide-react"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
 interface Question {
@@ -38,6 +38,7 @@ export default function AssessmentInterface({ assessment, attempt, questions, us
   const [copyPasteCount, setCopyPasteCount] = useState(0)
   const router = useRouter()
   const autoSaveRef = useRef<NodeJS.Timeout>()
+  const supabase = createClient()
 
   // Calculate time remaining
   useEffect(() => {
